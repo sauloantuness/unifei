@@ -1,5 +1,3 @@
-RESTA UM
-
 #include <stdio.h>
 #include <conio.h>
 

@@ -15,7 +15,7 @@ Domains
 
 Database
 
-         livro (                cod_livro,      titulo,  genero)
+         livro (                  cod_livro,    titulo,  genero)
        cliente (                cod_cliente,      nome,  idade)
     emprestimo (cod_emprestimo, cod_cliente, cod_livro,  data)
 
@@ -33,11 +33,11 @@ Predicates
     lis_clientes.
     lis_livros.
 
-    log_cliente.
+    log_cliente (integer).
     log_livro.
 
-    imp_clientes    (lista_str).
-    imp_livros      (lista_str).
+    imp_clientes    (lista_int).
+    imp_livros      (lista_int).
     imp_emprestimos (lista_int).
 
     ver_cliente (string)
@@ -52,310 +52,69 @@ Predicates
     pegar.
     devolver.
 
-    processa (integer)
-    boot     (integer)
-    menu     (integer, string)
-
+    processa (integer).
+    boot     (integer).
+    menu     (integer, string).
+  
+    rep (string, integer).       /*Repete*/
+    cab (string).                /*Cabeçalho*/
+    opc (lista_str, integer).    /*Opções*/
+    rod (string).                /*Rodape*/
+    
+    le_i (string,integer).
+    le_s (string,string).
 
 Clauses
 
-    qtd([],0).
-    qtd([_|L],N) :- qtd(L,N2), N = N2 + 1.                
+    opc([],_) :- !.
+    opc([S|L],N) :- 
+            write("  ", N, " - ", S),nl,
+            N1 = N + 1,
+            opc(L,N1).
+                    
+    rep(_,0) :- !.
+    rep(C,N) :- 
+            write(C), 
+            N1 = N-1,
+            rep(C,N1). 
 
-    qtd_clientes(N) :- findall(X,cliente(X,_,_),L),
-                       qtd(L,N).
+    le_i(M,I) :-
+            write(M), readInt(I).
 
-    qtd_livros(N) :- findall(X,livro(X,_,_),L),
-                       qtd(L,N).                       
-
-    qtd_emprestimos(N) :- findall(X,emprestimo(X, _, _, _),L),
-                            qtd(L,N).
-
-    menu(0,_) :- 
+    le_s(M,S) :-
+            write(M), readln(S).
+  
+    cab(Titulo) :-  
+            str_len(Titulo,T),
+            N = (24 - T)/2 ,
             clearwindow,nl,
-            write("LOCADORA MAT014"),nl,nl,
-            write("1 - Nova"),nl,
-            write("2 - Carregar "),nl,
-            write("3 - Apagar "),nl,
-            write("0 - Sair "),nl,nl,
-            write("> "),
-            readInt(Op),
-            boot(Op).
+            rep(" ", N),
+            write(Titulo),nl,
+            rep("-", 24).
 
-    menu(1,Locadora) :- 
-            clearwindow, nl,
-            Nome = Locadora,
-            write(Nome, " - Locadora"),nl,
-            write("-----------------"),nl,
-            write("Adicionar:"),nl,
-            write("   1 - Cliente"),nl,
-            write("   2 - Livro"),nl,nl,
-            
-            write("Buscar:"),nl,
-            write("   3 - Cliente"),nl,
-            write("   4 - Livro"),nl,nl,
-            
-            write("Remover:"),nl,
-            write("   5 - Cliente"),nl,
-            write("   6 - Livro"),nl,nl,
+    rod(Mensagem) :-
+            nl,write(Mensagem),
+            readchar(_).
 
-            write("Listar:"),nl,
-            write("   7 - Clientes"),nl,
-            write("   8 - Livros"),nl,nl,
-            
-            write("Relatorio:"),nl,
-            write("   9 - Cliente"),nl,
-            write("  10 - Livro"),nl,nl,
-            
-            write("Emprestimo:"),nl,
-            write("  11 - Pegar"),nl,
-            write("  12 - Devolver"),nl,nl,
-            
-            write("   0 - Sair"),nl,nl,
-            write("> "),
+    qtd([],0) :- !.
+    qtd([_|L],N) :- 
+            qtd(L,N2), 
+            N = N2 + 1.                
 
-            readint(Op),
-            processa(Op),
+    qtd_clientes(N) :- 
+            findall(X,cliente(X,_,_),L),
+            qtd(L,N).
 
-            save(Locadora),
+    qtd_livros(N) :-  
+            findall(X,livro(X,_,_),L),
+            qtd(L,N).                       
 
-            Op <> 0,
-            menu(1,Locadora).
-
-    boot(1) :- clearwindow, nl,
-               write("    Nova Locadora    "),nl,
-               write("---------------------"),nl,
-               write("Nome: "),
-               readln(Nome),
-               save(Nome),
-               nl,write("Criado com sucesso."),
-               readchar(_),
-               menu(1,Nome).
-    
-    boot(2) :- clearwindow, nl,
-               write("  Carregar Locadora  "),nl,
-               write("---------------------"),nl,
-               write("Nome: "),
-               readln(Nome),
-               consult(Nome),
-               nl,write("Carregado com sucesso."),
-               readchar(_),
-               menu(1,Nome).
-
-    boot(3) :- clearwindow, nl,
-               write("   Apagar Locadora   "),nl,
-               write("---------------------"),nl,
-               write("Nome: "),
-               readln(Nome),
-               deletefile(Nome),
-               nl,write("Apagado com sucesso."),
-               readchar(_),
-               menu(0,_).
+    qtd_emprestimos(N) :- 
+            findall(X,emprestimo(X, _, _, _),L),
+            qtd(L,N).
 
 
-
-    ver_cliente (Nome) :- cliente (_, Nome, _).
-     
-    ver_livro (Nome) :- livro (_, Nome, _).
-
-
-    add_cliente :- clearwindow,nl,
-                   write("Adicionar Cliente"),nl,
-                   write("-----------------"),nl,
-                   write("Nome: "),
-                   readln(Nome),nl,
-                   not(ver_cliente(Nome)),
-                   write("Idade: "),
-                   readInt(Idade),
-                   qtd_clientes(COD),
-                   COD1 = COD+1,
-                   assertz(cliente(COD1,Nome,Idade)),
-                   nl,write("Adicionado com sucesso."),
-                   readchar(_),!.
-
-    add_cliente :- write("Cliente ja existe."),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_).
-
-
-    add_livro :-   clearwindow,nl,
-                   write("Adicionar Livro"),nl,
-                   write("-----------------"),nl,
-                   write("Nome: "),
-                   readln(Nome),nl,
-                   not(ver_livro(Nome)),
-                   write("Genero: "),
-                   readln(Genero),
-                   qtd_livros(COD),
-                   COD1 = COD+1,
-                   assertz(livro(COD1,Nome,Genero)),
-                   nl,write("Adicionado com sucesso."),
-                   readchar(_),!.
-
-    add_livro :-   write("Livro ja existe."),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_).
-
-
-    rem_cliente :- clearwindow,nl,
-                   write("Remover Cliente"),nl,
-                   write("-----------------"),nl,
-                   write("Nome: "),
-                   readln(Nome),nl,
-                   retract(cliente(_,Nome,_)),
-                   /* PARA NAO ATRAPALHAR O COD AUTO */
-                   assertz(cliente(0," ",0)),
-                   nl,write("Removido com sucesso."),
-                   readchar(_),!.
-
-    rem_cliente :- write("Cliente nao encontrado."),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_).
-
-
-    rem_livro   :- clearwindow,nl,
-                   write("Remover Livro"),nl,
-                   write("-----------------"),nl,
-                   write("Nome: "),
-                   readln(Nome),nl,
-                   retract(livro(_,Nome,_)),
-                   /* PARA NAO ATRAPALHAR O COD AUTO */
-                   assertz(livro(0," "," ")),
-                   nl,write("Removido com sucesso."),
-                   readchar(_),!.
-
-    rem_livro   :- write("Livro nao encontrado."),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_).
-
-
-    bus_cliente :- clearwindow,nl,
-                   write("Buscar Cliente"),nl,
-                   write("-----------------"),nl,
-                   write("Nome: "),
-                   readln(Nome),nl,
-                   cliente(COD,Nome,Idade),
-                   write("Codigo: ",COD),nl,
-                   write("  Nome: ",Nome),nl,
-                   write(" Idade: ",Idade),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_),!.
-
-    bus_cliente :- write("Cliente nao encontrado."),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_).
-
-
-    bus_livro   :- clearwindow,nl,
-                   write("Buscar Livro"),nl,
-                   write("-----------------"),nl,
-                   write("Nome: "),
-                   readln(Nome),nl,
-                   livro(COD,Nome,Genero),
-                   write("Codigo: ",COD),nl,
-                   write("  Nome: ",Nome),nl,
-                   write("Genero: ",Genero),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_),!.
-
-    bus_livro   :- write("Cliente nao encontrado."),nl,
-                   nl,write("Tecle para continuar..."),
-                   readchar(_).
-
-
-    imp_clientes([]) :- readchar(_).
-
-    imp_clientes([Cliente|Clientes]) :-
-                   cliente(COD,Cliente,Idade),
-                   write("  COD: ",COD),nl,
-                   write(" Nome: ",Cliente),nl,
-                   write("Idade: ",Idade),nl,
-                   write("--------------"),nl,
-                   imp_clientes(Clientes).
-
-
-    imp_livros([]) :- readchar(_).
-
-    imp_livros([Livro|Livros]) :-
-                   livro(COD,Livro,Genero),
-                   write("   COD: ",COD),nl,
-                   write("  Nome: ",Livro),nl,
-                   write("Genero: ",Genero),nl,
-                   write("--------------"),nl,
-                   imp_livros(Livros).
-
-    imp_emprestimos([]) :- readchar(_).
-
-    imp_emprestimos([Emprestimo|Emprestimos]) :-
-                   emprestimo(Emprestimo,_,CodLivro,Data),
-                   livro(CodLivro,Titulo,_),
-                   write("   COD: ",Emprestimo),nl,
-                   write("  Nome: ",Titulo),nl,
-                   write("  Data: ",Data),nl,
-                   write("--------------"),nl,
-                   imp_emprestimos(Emprestimos).
-
-
-
-
-    lis_clientes :- findall(X,cliente(_,X,_),Clientes),
-                      clearwindow,
-                      write(" Clientes "),nl,
-                      write("=========="),nl,nl,
-                      imp_clientes(Clientes).
-
-
-    lis_livros   :- findall(X,livro(_,X,_),Livros),
-                      clearwindow,
-                      write(" Livros "),nl,
-                      write("=========="),nl,nl,
-                      imp_livros(Livros).
-
-
-    pegar :- clearwindow,nl,
-             write("   Pegar Livro   "),nl,
-             write("-----------------"),nl,
-             write("Cod Cliente: "),
-             readInt(CodCliente),
-             write("Cod Livro: "),
-             readInt(CodLivro),
-             write("Data: "),
-             readln(Data),
-             qtd_emprestimos(COD),
-             COD1 = COD+1,
-             assertz(emprestimo(COD1,CodCliente,CodLivro,Data)),
-             nl,write("Adicionado com sucesso."),
-             readchar(_),!.
-
-    pegar :- write("Registo ja inserido"),nl,
-             nl,write("Tecle para continuar..."),
-             readchar(_).
-
-    devolver.
-
-
-    log_cliente() :- clearwindow,nl,
-                   write("  Log Cliente  "),nl,
-                   write("---------------"),nl,
-                   write("Nome: "),
-                   readInt(CodCliente),
-                   cliente(CodCliente,Nome,Idade),
-                   clearwindow,nl,
-                   write("  Log Cliente  "),nl,
-                   write("---------------"),nl,
-                   write("  COD: ",CodCliente),nl,
-                   write(" Nome: ",Nome),nl,
-                   write("Idade: ",Idade),nl,nl,
-                   findall(X,emprestimo(X,CodCliente,_,_),CodLivros),
-                   qtd(CodLivros,Qtd),
-                   write("Emprestimos: ", Qtd),nl,
-
-                   imp_emprestimos(CodLivros).
-
-
-    log_livro.
-
-    processa(0).
+    processa(0) :- !.
 
     processa(1) :- add_cliente.
     processa(2) :- add_livro.
@@ -369,11 +128,272 @@ Clauses
     processa(7) :- lis_clientes.
     processa(8) :- lis_livros.
 
-    processa(9)  :- log_cliente.
+    processa(9)  :- log_cliente(0).
     processa(10) :- log_livro.
     
     processa(11) :- pegar.
     processa(12) :- devolver.
 
+
+    menu(0,_) :- 
+            cab("BIBLIOTECA MAT014"),
+            opc(["Nova","Carregar","Apagar"],1),
+            opc(["Sair"],0),
+            le_i("> ",Op),
+            boot(Op).
+
+    menu(1,Nome) :- 
+            Nome = Nome,
+            cab(Nome),
+
+            write("Adicionar:"),nl,
+            opc(["Cliente","Livro"],1),nl,
+            
+            write("Buscar:"),nl,
+            opc(["Cliente","Livro"],3),nl,
+
+            write("Remover:"),nl,
+            opc(["Cliente","Livro"],5),nl,
+
+            write("Listar:"),nl,
+            opc(["Clientes","Livros"],7),nl,
+            
+            write("Relatorio:"),nl,
+            opc(["Cliente","Livro"],9),nl,
+            
+            write("Emprestimo:"),nl,
+            opc(["Pegar","Devolver"],11),nl,
+            
+            opc(["Sair"],0),nl,
+            le_i("> ",Op),
+
+            processa(Op),
+
+            Op <> 0,
+            menu(1,Nome).
+
+    menu(1,Nome) :- 
+            Nome = Nome,
+            save(Nome),!.
+
+    boot(0) :- !.
+
+    boot(1) :- 
+            cab("Nova Biblioteca"),
+            le_s("Nome: ",Nome),
+            save(Nome),
+            rod("Criado com sucesso"),
+            menu(1,Nome).
+    
+    boot(2) :- 
+            cab("Carregar Biblioteca"),
+            le_s("Nome: ",Nome),
+            consult(Nome),
+            rod("Carregado com sucesso."),
+            menu(1,Nome).
+
+    boot(3) :- 
+            cab("Apagar Biblioteca"),
+            le_s("Nome: ",Nome),
+            deletefile(Nome),
+            rod("Apagado com sucesso."),
+            menu(0,_).
+
+    ver_cliente(Nome) :- 
+            cliente (_, Nome, _).
+     
+    ver_livro(Nome) :- 
+            livro (_, Nome, _).
+
+    add_cliente() :- 
+            cab("Adicionar Cliente"),
+            le_s("Nome: ", Nome),
+            not(ver_cliente(Nome)),
+            le_i("Idade: ", Idade),
+            qtd_clientes(COD),
+            COD1 = COD+1,
+            assertz(cliente(COD1,Nome,Idade)),
+            rod("Adicionado com sucesso.").
+
+    add_cliente() :- 
+            write("Cliente ja existe."),nl,
+            rod("Tecle para continuar...").
+
+    add_livro() :-
+            cab("Adicionar Livro"),
+            le_s("Nome: ",Nome),          
+            not(ver_livro(Nome)),
+            le_s("Genero: ",Genero),
+            qtd_livros(COD),
+            COD1 = COD+1,
+            assertz(livro(COD1,Nome,Genero)),
+            rod("Adicionado com sucesso."),!.
+
+    add_livro() :-   
+            write("Livro ja existe."),nl,
+            rod("Tecle para continuar...").
+
+
+    rem_cliente() :- 
+            cab("Remover Cliente"),
+            le_s("Nome: ",Nome),          
+            retract(cliente(_,Nome,_)),
+            /* PARA NAO ATRAPALHAR O COD AUTO */
+            assertz(cliente(0," ",0)),
+            rod("Removido com sucesso."),!.
+
+    rem_cliente() :- 
+            write("Cliente nao encontrado."),nl,
+            rod("Tecle para continuar...").
+
+
+    rem_livro() :- 
+            rod("Remover Livro"),
+            le_s("Nome: ",Nome),          
+            retract(livro(_,Nome,_)),
+            /* PARA NAO ATRAPALHAR O COD AUTO */
+            assertz(livro(0," "," ")),
+            rod("Removido com sucesso."),!.
+ 
+    rem_livro() :- 
+            write("Livro nao encontrado."),nl,
+            rod("Tecle para continuar...").
+
+    bus_cliente() :- 
+            cab("Buscar Cliente"),
+            le_s("Nome: ",Nome),          
+            cliente(COD,Nome,Idade),nl,
+            write("Codigo: ",COD),nl,
+            write("  Nome: ",Nome),nl,
+            write(" Idade: ",Idade),nl,
+            rod("Tecle para continuar..."),!.
+        
+    bus_cliente() :- 
+            write("Cliente nao encontrado."),nl,
+            rod("Tecle para continuar...").
+
+    bus_livro() :- 
+            cab("Buscar Livro"),
+            le_s("Nome: ",Nome),          
+            livro(COD,Nome,Genero),nl,
+            write("Codigo: ",COD),nl,
+            write("  Nome: ",Nome),nl,
+            write("Genero: ",Genero),nl,
+            rod("Tecle para continuar..."),!.
+               
+    bus_livro() :- 
+            write("Cliente nao encontrado."),nl,
+            rod("Tecle para continuar...").
+
+    imp_clientes([]) :- !.
+
+    imp_clientes([0|CodClientes]) :- imp_clientes(CodClientes).
+
+    imp_clientes([CodCliente|CodClientes]) :-
+            cliente(CodCliente,Nome,Idade),
+            write("  COD: ",CodCliente),nl,
+            write(" Nome: ",Nome),nl,
+            write("Idade: ",Idade),nl,
+            write("--------------"),nl,
+            imp_clientes(CodClientes).
+ 
+
+    imp_livros([]) :- !.
+
+    imp_livros([0|CodLivros]) :- imp_clientes(CodLivros).
+
+    imp_livros([CodLivro|CodLivros]) :-
+            livro(CodLivro,Titulo,Genero),
+            write("   COD: ",CodLivro),nl,
+            write("  Nome: ",Titulo),nl,
+            write("Genero: ",Genero),nl,
+            write("--------------"),nl,
+            imp_livros(Livros).
+
+    imp_emprestimos([]) :- !.
+
+    imp_emprestimos([Emprestimo|Emprestimos]) :-
+            emprestimo(Emprestimo,_,CodLivro,Data),
+            livro(CodLivro,Titulo,_),
+            write("   COD: ",Emprestimo),nl,
+            write("  Nome: ",Titulo),nl,
+            write("  Data: ",Data),nl,
+            write("--------------"),nl,
+            imp_emprestimos(Emprestimos).
+
+
+
+    lis_clientes() :- 
+            cab("Clientes"),
+            findall(X,cliente(X,_,_),CodClientes),
+            imp_clientes(CodClientes),
+            rod("Tecle para continuar.").
+
+
+    lis_livros() :- 
+            cab("Livros"),
+            findall(X,livro(X,_,_),CodLivros),
+            imp_livros(CodLivros),
+            rod("Tecle para continuar.").
+
+
+    pegar() :- 
+            cab("Pegar Livro"),
+            le_i("Cod Cliente: ",CodCliente),
+            le_i("Cod Livro: ",CodLivro),
+            le_s("Data: ",Data),
+            qtd_emprestimos(COD),
+            COD1 = COD + 1,
+            assertz(emprestimo(COD1,CodCliente,CodLivro,Data)),
+            rod("Adicionado com sucesso."),!.
+
+    pegar() :- 
+            write("Registo ja inserido"),nl,
+            rod("Tecle para continuar..."),!.
+
+    devolver.
+
+
+    log_cliente(0) :- 
+            cab("Log Cliente"),
+            opc(["Codigo","Nome"],1),
+            le_i("> ",Op),
+            log_cliente(Op).
+
+    log_cliente(1) :-
+            le_i("Informe o Codigo: ",CodCliente),
+            cliente(CodCliente,Nome,Idade),
+            cab("Log Cliente"),
+            write("  COD: ",CodCliente),nl,
+            write(" Nome: ",Nome),nl,
+            write("Idade: ",Idade),nl,nl,
+            findall(X,emprestimo(X,CodCliente,_,_),CodLivros),
+            qtd(CodLivros,Qtd),
+            write("Emprestimos: ", Qtd),nl,nl,
+            imp_emprestimos(CodLivros),
+            rod("Tecle para continuar."),!.
+
+    log_cliente(1) :- 
+            rod("Codigo Invalido.").
+
+    log_cliente(2) :-
+            le_s("Informe o Nome: ",Nome),
+            cliente(CodCliente,Nome,Idade),
+            cab("Log Cliente"),
+            write("  COD: ",CodCliente),nl,
+            write(" Nome: ",Nome),nl,
+            write("Idade: ",Idade),nl,nl,
+            findall(X,emprestimo(X,CodCliente,_,_),CodLivros),
+            qtd(CodLivros,Qtd),
+            write("Emprestimos: ", Qtd),nl,nl,
+            imp_emprestimos(CodLivros),
+            rod("Tecle para continuar."),!.
+
+    log_cliente(2) :- 
+            rod("Nome Invalido.").
+
+    log_livro.
+
 Goal
+
     menu(0,_).

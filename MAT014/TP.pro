@@ -1,3 +1,5 @@
+code = 2000
+
 Domains
 
     cod_emprestimo = integer
@@ -23,25 +25,22 @@ Database
 Predicates
 
     add_cliente.
-    rem_cliente.
-    bus_cliente.
+    rem_cliente (integer, integer)
+    bus_cliente (integer, integer).
 
     add_livro.
-    bus_livro.
-    rem_livro.
+    bus_livro (integer,integer).
+    rem_livro (integer,integer).
 
     lis_clientes.
     lis_livros.
 
-    log_cliente (integer).
+    log_cliente (integer, integer).
     log_livro.
 
     imp_clientes    (lista_int).
     imp_livros      (lista_int).
     imp_emprestimos (lista_int).
-
-    ver_cliente (string)
-    ver_livro   (string)
 
     qtd_clientes    (integer)
     qtd_livros      (integer)
@@ -52,17 +51,18 @@ Predicates
     pegar.
     devolver.
 
-    processa (integer).
-    boot     (integer).
     menu     (integer, string).
+    boot     (integer).
+    processa (integer).
   
-    rep (string, integer).       /*Repete*/
     cab (string).                /*Cabeçalho*/
     opc (lista_str, integer).    /*Opções*/
     rod (string).                /*Rodape*/
+    rep (string, integer).       /*Repete*/
     
     le_i (string,integer).
     le_s (string,string).
+
 
 Clauses
 
@@ -79,10 +79,10 @@ Clauses
             rep(C,N1). 
 
     le_i(M,I) :-
-            write(M), readInt(I).
+            nl, write(M), readInt(I), nl.
 
     le_s(M,S) :-
-            write(M), readln(S).
+            nl, write(M), readln(S), nl.
   
     cab(Titulo) :-  
             str_len(Titulo,T),
@@ -113,27 +113,25 @@ Clauses
             findall(X,emprestimo(X, _, _, _),L),
             qtd(L,N).
 
-
     processa(0) :- !.
 
     processa(1) :- add_cliente.
     processa(2) :- add_livro.
 
-    processa(3) :- bus_cliente.
-    processa(4) :- bus_livro.
+    processa(3) :- bus_cliente(0,_).
+    processa(4) :- bus_livro(0,_).
     
-    processa(5) :- rem_cliente.
-    processa(6) :- rem_livro.
+    processa(5) :- rem_cliente(0,_).
+    processa(6) :- rem_livro(0,_).
 
     processa(7) :- lis_clientes.
     processa(8) :- lis_livros.
 
-    processa(9)  :- log_cliente(0).
+    processa(9)  :- log_cliente(0,_).
     processa(10) :- log_livro.
     
     processa(11) :- pegar.
     processa(12) :- devolver.
-
 
     menu(0,_) :- 
             cab("BIBLIOTECA MAT014"),
@@ -199,16 +197,10 @@ Clauses
             rod("Apagado com sucesso."),
             menu(0,_).
 
-    ver_cliente(Nome) :- 
-            cliente (_, Nome, _).
-     
-    ver_livro(Nome) :- 
-            livro (_, Nome, _).
-
     add_cliente() :- 
             cab("Adicionar Cliente"),
             le_s("Nome: ", Nome),
-            not(ver_cliente(Nome)),
+            not(cliente(_,Nome,_)),
             le_i("Idade: ", Idade),
             qtd_clientes(COD),
             COD1 = COD+1,
@@ -221,94 +213,167 @@ Clauses
 
     add_livro() :-
             cab("Adicionar Livro"),
-            le_s("Nome: ",Nome),          
-            not(ver_livro(Nome)),
+            le_s("Titulo: ",Titulo),          
+            not(livro(_,Titulo,_)),
             le_s("Genero: ",Genero),
             qtd_livros(COD),
             COD1 = COD+1,
-            assertz(livro(COD1,Nome,Genero)),
+            assertz(livro(COD1,Titulo,Genero)),
             rod("Adicionado com sucesso."),!.
 
     add_livro() :-   
             write("Livro ja existe."),nl,
             rod("Tecle para continuar...").
 
-
-    rem_cliente() :- 
+    rem_cliente(0,_) :- 
             cab("Remover Cliente"),
-            le_s("Nome: ",Nome),          
-            retract(cliente(_,Nome,_)),
+            opc(["Codigo","Nome"],1),
+            le_i("> ",Op),
+            rem_cliente(Op,_).
+
+    rem_cliente(1,_) :-
+            le_i("Informe o Cod: ",CodCliente),
+            cliente(CodCliente, _, _),
+            rem_cliente(3,CodCliente).
+
+    rem_cliente(1,_) :- 
+            nl,write("Codigo Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    rem_cliente(2,_) :-
+            le_s("Informe o Nome: ",Nome),
+            cliente(CodCliente,Nome,_),
+            rem_cliente(3,CodCliente).
+
+    rem_cliente(2,_) :- 
+            nl,write("Nome Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    rem_cliente(3,CodCliente) :-
+            retract(cliente(CodCliente, _, _)),
             /* PARA NAO ATRAPALHAR O COD AUTO */
             assertz(cliente(0," ",0)),
-            rod("Removido com sucesso."),!.
+            write("Removido com sucesso."),nl,
+            rod("Tecle para continuar..."),!.
 
-    rem_cliente() :- 
-            write("Cliente nao encontrado."),nl,
+    rem_livro(0,_) :- 
+            cab("Remover Livro"),
+            opc(["Codigo","Titulo"],1),
+            le_i("> ",Op),
+            rem_livro(Op,_).
+
+    rem_livro(1,_) :-
+            le_i("Informe o Cod: ",CodLivro),
+            livro(CodLivro, _, _),
+            rem_livro(3,CodLivro).
+
+    rem_livro(1,_) :- 
+            nl,write("Codigo Invalido."),nl,
             rod("Tecle para continuar...").
 
+    rem_livro(2,_) :-
+            le_s("Informe o Titulo: ",Titulo),
+            livro(CodLivro,Titulo,_),
+            rem_livro(3,CodLivro).
 
-    rem_livro() :- 
-            rod("Remover Livro"),
-            le_s("Nome: ",Nome),          
-            retract(livro(_,Nome,_)),
+    rem_livro(2,_) :- 
+            nl,write("Titulo Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    rem_livro(3,CodLivro) :-
+            retract(livro(CodLivro,_,_)),
             /* PARA NAO ATRAPALHAR O COD AUTO */
             assertz(livro(0," "," ")),
-            rod("Removido com sucesso."),!.
- 
-    rem_livro() :- 
-            write("Livro nao encontrado."),nl,
+            write("Removido com sucesso."),nl,
+            rod("Tecle para continuar..."),!.
+
+    bus_cliente(0,_) :- 
+            cab("Buscar Cliente"),
+            opc(["Codigo","Nome"],1),
+            le_i("> ",Op),
+            bus_cliente(Op,_).
+
+    bus_cliente(1,_) :-
+            le_i("Informe o Cod: ",CodCliente),
+            cliente(CodCliente, _, _),
+            bus_cliente(3,CodCliente).
+
+    bus_cliente(1,_) :- 
+            nl,write("Codigo Invalido."),nl,
             rod("Tecle para continuar...").
 
-    bus_cliente() :- 
-            cab("Buscar Cliente"),
-            le_s("Nome: ",Nome),          
-            cliente(COD,Nome,Idade),nl,
-            write("Codigo: ",COD),nl,
+    bus_cliente(2,_) :-
+            le_s("Informe o Nome: ",Nome),
+            cliente(CodCliente,Nome,_),
+            bus_cliente(3,CodCliente).
+
+    bus_cliente(2,_) :- 
+            nl,write("Nome Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    bus_cliente(3,CodCliente) :-
+            cliente(CodCliente,Nome,Idade),
+            write("Codigo: ",CodCliente),nl,
             write("  Nome: ",Nome),nl,
             write(" Idade: ",Idade),nl,
-            rod("Tecle para continuar..."),!.
-        
-    bus_cliente() :- 
-            write("Cliente nao encontrado."),nl,
+            rod("Tecle para conitnuar...").
+
+    bus_livro(0,_) :- 
+            cab("Buscar Livro"),
+            opc(["Codigo","Titulo"],1),
+            le_i("> ",Op),
+            bus_livro(Op,_).
+
+    bus_livro(1,_) :-
+            le_i("Informe o Cod: ",CodLivro),
+            livro(CodLivro, _, _),
+            bus_livro(3,CodLivro).
+
+    bus_livro(1,_) :- 
+            nl,write("Codigo Invalido."),nl,
             rod("Tecle para continuar...").
 
-    bus_livro() :- 
-            cab("Buscar Livro"),
-            le_s("Nome: ",Nome),          
-            livro(COD,Nome,Genero),nl,
-            write("Codigo: ",COD),nl,
-            write("  Nome: ",Nome),nl,
-            write("Genero: ",Genero),nl,
-            rod("Tecle para continuar..."),!.
-               
-    bus_livro() :- 
-            write("Cliente nao encontrado."),nl,
+    bus_livro(2,_) :-
+            le_s("Informe o Titulo: ",Titulo),
+            livro(CodLivro,Titulo,_),
+            bus_livro(3,CodLivro).
+
+    bus_livro(2,_) :- 
+            nl,write("Titulo Invalido."),nl,
             rod("Tecle para continuar...").
+
+    bus_livro(3,CodLivro) :-
+            livro(CodLivro,Titulo,Genero),
+            write("Codigo: ", CodLivro),nl,
+            write("Titulo: ", Titulo),nl,
+            write("Genero: ", Genero),nl,
+            rod("Tecle para conitnuar...").
 
     imp_clientes([]) :- !.
 
-    imp_clientes([0|CodClientes]) :- imp_clientes(CodClientes).
+    imp_clientes([0|CodClientes]) :- 
+            imp_clientes(CodClientes).
 
     imp_clientes([CodCliente|CodClientes]) :-
             cliente(CodCliente,Nome,Idade),
             write("  COD: ",CodCliente),nl,
             write(" Nome: ",Nome),nl,
             write("Idade: ",Idade),nl,
-            write("--------------"),nl,
-            imp_clientes(CodClientes).
- 
+            rep("-",24),nl,
+            imp_clientes(CodClientes). 
 
     imp_livros([]) :- !.
 
-    imp_livros([0|CodLivros]) :- imp_clientes(CodLivros).
+    imp_livros([0|CodLivros]) :- 
+            imp_clientes(CodLivros).
 
     imp_livros([CodLivro|CodLivros]) :-
             livro(CodLivro,Titulo,Genero),
             write("   COD: ",CodLivro),nl,
             write("  Nome: ",Titulo),nl,
             write("Genero: ",Genero),nl,
-            write("--------------"),nl,
-            imp_livros(Livros).
+            rep("-",24),nl,
+            imp_livros(CodLivros).
 
     imp_emprestimos([]) :- !.
 
@@ -318,34 +383,102 @@ Clauses
             write("   COD: ",Emprestimo),nl,
             write("  Nome: ",Titulo),nl,
             write("  Data: ",Data),nl,
-            write("--------------"),nl,
+            rep("-",24),nl,
             imp_emprestimos(Emprestimos).
-
-
 
     lis_clientes() :- 
             cab("Clientes"),
             findall(X,cliente(X,_,_),CodClientes),
             imp_clientes(CodClientes),
-            rod("Tecle para continuar.").
-
+            rod("Tecle para continuar...").
 
     lis_livros() :- 
             cab("Livros"),
             findall(X,livro(X,_,_),CodLivros),
             imp_livros(CodLivros),
-            rod("Tecle para continuar.").
+            rod("Tecle para continuar...").
 
+    log_cliente(0,_) :- 
+            cab("Log Cliente"),
+            opc(["Codigo","Nome"],1),
+            le_i("> ",Op),
+            log_cliente(Op,_).
+
+    log_cliente(1,_) :-
+            le_i("Informe o Codigo: ",CodCliente),
+            cliente(CodCliente,_,_),
+            log_cliente(3,CodCliente).
+
+    log_cliente(1,_) :- 
+            nl,write("Codigo Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    log_cliente(2,_) :-
+            le_s("Informe o Nome: ",Nome),
+            cliente(CodCliente,Nome,_),
+            log_cliente(3,CodCliente).
+
+    log_cliente(2,_) :- 
+            nl,write("Nome Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    log_cliente(3,CodCliente) :-
+            cliente(CodCliente,Nome,Idade),
+            cab("Log Cliente"),
+            write("  COD: ",CodCliente),nl,
+            write(" Nome: ",Nome),nl,
+            write("Idade: ",Idade),nl,nl,
+            findall(X,emprestimo(X,CodCliente,_,_),CodEmprestimos),
+            qtd(CodEmprestimos,Qtd),
+            write("Emprestimos: ", Qtd),nl,nl,
+            imp_emprestimos(CodEmprestimos),
+            rod("Tecle para continuar..."),!.            
+
+    log_livro(0,_) :- 
+            cab("Log Livro"),
+            opc(["Codigo","Titulo"],1),
+            le_i("> ",Op),
+            log_livro(Op,_).
+
+    log_livro(1,_) :-
+            le_i("Informe o Codigo: ",CodLivro),
+            Livro(CodLivro,_,_),
+            log_livro(3,CodLivro).
+
+    log_livro(1,_) :- 
+            nl,write("Codigo Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    log_livro(2,_) :-
+            le_s("Informe o Titulo: ",Titulo),
+            Livro(CodLivro,Titulo,_),
+            log_livro(3,CodLivro).
+
+    log_livro(2,_) :- 
+            nl,write("Titulo Invalido."),nl,
+            rod("Tecle para continuar...").
+
+    log_livro(3,CodLivro) :-
+            Livro(CodLivro,Titulo,Genero),
+            cab("Log Livro"),
+            write("   COD: ",CodLivro),nl,
+            write("Titulo: ",Titulo),nl,
+            write("Genero: ",Genero),nl,nl,
+            findall(X,emprestimo(X,_,CodLivro,_),CodEmprestimos),
+            qtd(CodEmprestimos,Qtd),
+            write("Emprestimos: ", Qtd),nl,nl,
+            imp_emprestimos(CodEmprestimos),
+            rod("Tecle para continuar..."),!.
 
     pegar() :- 
-            cab("Pegar Livro"),
-            le_i("Cod Cliente: ",CodCliente),
-            le_i("Cod Livro: ",CodLivro),
-            le_s("Data: ",Data),
-            qtd_emprestimos(COD),
-            COD1 = COD + 1,
-            assertz(emprestimo(COD1,CodCliente,CodLivro,Data)),
-            rod("Adicionado com sucesso."),!.
+        cab("Pegar Livro"),
+        le_i("Cod Cliente: ",CodCliente),
+        le_i("Cod Livro: ",CodLivro),
+        le_s("Data: ",Data),
+        qtd_emprestimos(COD),
+        COD1 = COD + 1,
+        assertz(emprestimo(COD1,CodCliente,CodLivro,Data)),
+        rod("Adicionado com sucesso."),!.
 
     pegar() :- 
             write("Registo ja inserido"),nl,
@@ -353,47 +486,10 @@ Clauses
 
     devolver.
 
-
-    log_cliente(0) :- 
-            cab("Log Cliente"),
-            opc(["Codigo","Nome"],1),
-            le_i("> ",Op),
-            log_cliente(Op).
-
-    log_cliente(1) :-
-            le_i("Informe o Codigo: ",CodCliente),
-            cliente(CodCliente,Nome,Idade),
-            cab("Log Cliente"),
-            write("  COD: ",CodCliente),nl,
-            write(" Nome: ",Nome),nl,
-            write("Idade: ",Idade),nl,nl,
-            findall(X,emprestimo(X,CodCliente,_,_),CodLivros),
-            qtd(CodLivros,Qtd),
-            write("Emprestimos: ", Qtd),nl,nl,
-            imp_emprestimos(CodLivros),
-            rod("Tecle para continuar."),!.
-
-    log_cliente(1) :- 
-            rod("Codigo Invalido.").
-
-    log_cliente(2) :-
-            le_s("Informe o Nome: ",Nome),
-            cliente(CodCliente,Nome,Idade),
-            cab("Log Cliente"),
-            write("  COD: ",CodCliente),nl,
-            write(" Nome: ",Nome),nl,
-            write("Idade: ",Idade),nl,nl,
-            findall(X,emprestimo(X,CodCliente,_,_),CodLivros),
-            qtd(CodLivros,Qtd),
-            write("Emprestimos: ", Qtd),nl,nl,
-            imp_emprestimos(CodLivros),
-            rod("Tecle para continuar."),!.
-
-    log_cliente(2) :- 
-            rod("Nome Invalido.").
-
-    log_livro.
-
 Goal
-
     menu(0,_).
+
+    /*date(A,B,C)
+        A,B,C = integer
+    */
+

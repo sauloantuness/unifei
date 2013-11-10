@@ -36,11 +36,11 @@ Predicates
     lis_livros.
 
     log_cliente (integer, integer).
-    log_livro.
+    log_livro   (integer, integer).
 
     imp_clientes    (lista_int).
     imp_livros      (lista_int).
-    imp_emprestimos (lista_int).
+    imp_emprestimos (lista_int, integer).
 
     qtd_clientes    (integer)
     qtd_livros      (integer)
@@ -49,7 +49,6 @@ Predicates
     qtd (lista_int, integer)
 
     pegar.
-    devolver.
 
     menu     (integer, string).
     boot     (integer).
@@ -118,20 +117,19 @@ Clauses
     processa(1) :- add_cliente.
     processa(2) :- add_livro.
 
-    processa(3) :- bus_cliente(0,_).
-    processa(4) :- bus_livro(0,_).
+    processa(3) :- bus_cliente (0,_).
+    processa(4) :- bus_livro   (0,_).
     
-    processa(5) :- rem_cliente(0,_).
-    processa(6) :- rem_livro(0,_).
+    processa(5) :- rem_cliente (0,_).
+    processa(6) :- rem_livro   (0,_).
 
     processa(7) :- lis_clientes.
     processa(8) :- lis_livros.
 
-    processa(9)  :- log_cliente(0,_).
-    processa(10) :- log_livro.
+    processa(9)  :- log_cliente (0,_).
+    processa(10) :- log_livro   (0,_).
     
     processa(11) :- pegar.
-    processa(12) :- devolver.
 
     menu(0,_) :- 
             cab("BIBLIOTECA MAT014"),
@@ -160,7 +158,7 @@ Clauses
             opc(["Cliente","Livro"],9),nl,
             
             write("Emprestimo:"),nl,
-            opc(["Pegar","Devolver"],11),nl,
+            opc(["Pegar"],11),nl,
             
             opc(["Sair"],0),nl,
             le_i("> ",Op),
@@ -252,8 +250,13 @@ Clauses
     rem_cliente(3,CodCliente) :-
             retract(cliente(CodCliente, _, _)),
             /* PARA NAO ATRAPALHAR O COD AUTO */
-            assertz(cliente(0," ",0)),
+            asserta(cliente(0," ",0)),
             write("Removido com sucesso."),nl,
+            rod("Tecle para continuar..."),!.
+
+    rem_cliente(N,_) :-
+            N > 3, 
+            write("Opcao Invalida."),nl,
             rod("Tecle para continuar..."),!.
 
     rem_livro(0,_) :- 
@@ -283,8 +286,13 @@ Clauses
     rem_livro(3,CodLivro) :-
             retract(livro(CodLivro,_,_)),
             /* PARA NAO ATRAPALHAR O COD AUTO */
-            assertz(livro(0," "," ")),
+            asserta(livro(0," "," ")),
             write("Removido com sucesso."),nl,
+            rod("Tecle para continuar..."),!.
+
+    rem_livro(N,_) :-
+            N > 3, 
+            write("Opcao Invalida."),nl,
             rod("Tecle para continuar..."),!.
 
     bus_cliente(0,_) :- 
@@ -318,6 +326,11 @@ Clauses
             write(" Idade: ",Idade),nl,
             rod("Tecle para conitnuar...").
 
+    bus_cliente(N,_) :-
+            N > 3, 
+            write("Opcao Invalida."),nl,
+            rod("Tecle para continuar..."),!.
+
     bus_livro(0,_) :- 
             cab("Buscar Livro"),
             opc(["Codigo","Titulo"],1),
@@ -349,6 +362,11 @@ Clauses
             write("Genero: ", Genero),nl,
             rod("Tecle para conitnuar...").
 
+    bus_livro(N,_) :-
+            N > 3, 
+            write("Opcao Invalida."),nl,
+            rod("Tecle para continuar..."),!.
+
     imp_clientes([]) :- !.
 
     imp_clientes([0|CodClientes]) :- 
@@ -365,7 +383,7 @@ Clauses
     imp_livros([]) :- !.
 
     imp_livros([0|CodLivros]) :- 
-            imp_clientes(CodLivros).
+            imp_livros(CodLivros).
 
     imp_livros([CodLivro|CodLivros]) :-
             livro(CodLivro,Titulo,Genero),
@@ -375,16 +393,38 @@ Clauses
             rep("-",24),nl,
             imp_livros(CodLivros).
 
-    imp_emprestimos([]) :- !.
+    imp_emprestimos([],_) :- !.
 
-    imp_emprestimos([Emprestimo|Emprestimos]) :-
-            emprestimo(Emprestimo,_,CodLivro,Data),
+    imp_emprestimos([Emprestimo|Emprestimos], 0) :-
+            emprestimo(Emprestimo,_ ,CodLivro,Data),
             livro(CodLivro,Titulo,_),
             write("   COD: ",Emprestimo),nl,
-            write("  Nome: ",Titulo),nl,
+            write("Titulo: ",Titulo),nl,
             write("  Data: ",Data),nl,
             rep("-",24),nl,
-            imp_emprestimos(Emprestimos).
+            imp_emprestimos(Emprestimos, 0),!.
+
+    imp_emprestimos([Emprestimo|Emprestimos], 0) :-
+            write("   COD: ",Emprestimo),nl,
+            write("  NOTA: Livro excluido"),nl,
+            rep("-",24),nl,
+            imp_emprestimos(Emprestimos, 0).
+
+
+    imp_emprestimos([Emprestimo|Emprestimos], 1) :-
+            emprestimo(Emprestimo,CodCliente,_ ,Data),
+            cliente(CodCliente,Nome,_),
+            write("   COD: ",Emprestimo),nl,
+            write("  Nome: ",Nome),nl,
+            write("  Data: ",Data),nl,
+            rep("-",24),nl,
+            imp_emprestimos(Emprestimos, 1),!.
+
+    imp_emprestimos([Emprestimo|Emprestimos], 1) :-
+            write("   COD: ",Emprestimo),nl,
+            write("  NOTA: Cliente excluido"),nl,
+            rep("-",24),nl,
+            imp_emprestimos(Emprestimos, 1).
 
     lis_clientes() :- 
             cab("Clientes"),
@@ -431,8 +471,13 @@ Clauses
             findall(X,emprestimo(X,CodCliente,_,_),CodEmprestimos),
             qtd(CodEmprestimos,Qtd),
             write("Emprestimos: ", Qtd),nl,nl,
-            imp_emprestimos(CodEmprestimos),
+            imp_emprestimos(CodEmprestimos, 0),
             rod("Tecle para continuar..."),!.            
+
+    log_cliente(N,_) :-
+            N > 3, 
+            write("Opcao Invalida."),nl,
+            rod("Tecle para continuar..."),!.
 
     log_livro(0,_) :- 
             cab("Log Livro"),
@@ -467,29 +512,30 @@ Clauses
             findall(X,emprestimo(X,_,CodLivro,_),CodEmprestimos),
             qtd(CodEmprestimos,Qtd),
             write("Emprestimos: ", Qtd),nl,nl,
-            imp_emprestimos(CodEmprestimos),
+            imp_emprestimos(CodEmprestimos, 1),
+            rod("Tecle para continuar..."),!.
+
+    log_livro(N,_) :-
+            N > 3, 
+            write("Opcao Invalida."),nl,
             rod("Tecle para continuar..."),!.
 
     pegar() :- 
-        cab("Pegar Livro"),
-        le_i("Cod Cliente: ",CodCliente),
-        le_i("Cod Livro: ",CodLivro),
-        le_s("Data: ",Data),
-        qtd_emprestimos(COD),
-        COD1 = COD + 1,
-        assertz(emprestimo(COD1,CodCliente,CodLivro,Data)),
-        rod("Adicionado com sucesso."),!.
+            cab("Pegar Livro"),
+            le_i("Cod Cliente: ",CodCliente),
+            cliente(CodCliente,_,_),
+            le_i("Cod Livro: ",CodLivro),
+            livro(CodLivro,_,_),
+            le_s("Data: ",Data),
+            qtd_emprestimos(COD),
+            COD1 = COD + 1,
+            assertz(emprestimo(COD1,CodCliente,CodLivro,Data)),
+            rod("Adicionado com sucesso."),!.
 
     pegar() :- 
-            write("Registo ja inserido"),nl,
+            write("Codigo Invalido."),nl,
             rod("Tecle para continuar..."),!.
 
-    devolver.
 
 Goal
     menu(0,_).
-
-    /*date(A,B,C)
-        A,B,C = integer
-    */
-

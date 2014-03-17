@@ -1,8 +1,12 @@
+#include <iostream>
+
+using namespace std;
+
 class Retangulo{
 	int largura;
 	int comprimento;
-	char borda;
-	char 
+
+public:
 
 	Retangulo(){
 		setLargura(1);
@@ -48,7 +52,10 @@ class Retangulo{
 	}
 
 	bool eQuadrado(){
-		return (getComprimento == getLargura)
+		if (getComprimento() == getLargura())
+			return true;
+		else
+			return false;
 	}
 
 	int area(){
@@ -74,4 +81,16 @@ class Retangulo{
 		}		
 	}
 
+};
+
+main(){
+	Retangulo r(50,60);
+	cout << r.getLargura() << endl;
+	cout << r.getComprimento() << endl;
+	r.setLargura(50);
+	cout << r.perimetro() << endl;
+	r.imprime();
+
+	if(r.eQuadrado())
+		cout << "Quadrado" << endl;
 }

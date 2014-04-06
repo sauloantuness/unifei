@@ -1,0 +1,15 @@
+#ifndef ID_POLREG
+#define ID_POLREG
+
+class PolReg{
+	int lados;
+	int comprimento;
+
+public:
+
+	int area();
+	int perimetro();
+	void nome();
+};
+
+#endif

@@ -4,6 +4,8 @@ UNIFEI
 Trabalhos e exercícios
 
 ### Disciplinas
-* ECO012
+
 * MAT014
+* ECO305
+* ECO012
 * ECO314

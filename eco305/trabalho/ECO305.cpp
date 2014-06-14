@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <algorithm>
+#include <vector>
 
 #define MAX 100
 #define INF 0x3F3F3F3F
@@ -114,6 +115,48 @@ void djk(int v){
 	cout << endl;
 }
 
+void bellman(int v){
+	int custo[n];
+	vector< pair<int,int> > arestas;
+	memset(custo, INF, sizeof custo);
+
+	custo[v] = 0;
+
+	for(int i = 0; i < n; i++)
+		for(int j = 0; j < n; j++)
+			if(g[i][j])
+				arestas.push_back(make_pair(i,j));
+
+	for(int i = 0; i < n-1; i++){
+		for(int j = 0; j < arestas.size(); j++){
+			int u = arestas[j].first;
+			int v = arestas[j].second;
+
+			if(custo[v] > custo[u] + g[u][v])
+				custo[v] = custo[u] + g[u][v];
+		}
+	}
+
+	bool ciclo = false;
+
+	for(int i = 0; i < arestas.size(); i++){
+		int u = arestas[i].first;
+		int v = arestas[i].second;
+
+		if(custo[u] != INF && custo[v] > custo[u] + g[u][v]){
+			ciclo = true;
+			break;	
+		}
+	}
+	
+	if(ciclo)
+		cout << "Possui ciclo negativo.";
+	else
+		for(int i = 0; i < n; i++)
+			custo[i] == INF ? cout << "*" : cout << custo[i];
+	cout << endl;
+}
+
 int main(){	
 	cin >> n;
 	for(int i = 0; i < n; i++)
@@ -121,5 +164,6 @@ int main(){
 			cin >> g[i][j];
 
 	//warshall();
-	djk(2);
+	//djk(2);
+	bellman(0);
 }

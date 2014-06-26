@@ -157,6 +157,122 @@ void bellman(int v){
 	cout << endl;
 }
 
+struct aresta{
+	int origem;
+	int destino;
+	int peso;
+
+	aresta(){}
+	aresta(int o, int d, int p)
+		: origem(o), destino(d), peso(p) {}
+
+	bool operator <(const aresta &a) const{
+		return peso < a.peso;
+	}
+};
+
+void kruskalMin(){
+	vector<aresta> arestas;
+
+	int p[n],u,v;
+
+	for(int i = 0; i < n; i++)
+		p[i] = i;
+
+	for(int i = 0; i < n; i++)
+		for(int j = i; j < n; j++)
+			if(g[i][j])
+				arestas.push_back(aresta(i,j,g[i][j]));
+
+	sort(arestas.begin(), arestas.end());
+
+	int total = 0;
+
+	for(int i = 0, k = 0; i < n && k < n -1 ; i++){
+		aresta a = arestas[i];
+
+		for(u = a.origem; u != p[u]; u = p[u]);
+		for(v = a.destino; v != p[v]; v = p[v]);
+
+		if(u == v)
+			continue;
+
+		p[u] = v;
+		k++;
+		total += a.peso;
+	}
+
+	cout << total;
+
+}
+
+void kruskalMax(){
+	vector<aresta> arestas;
+
+	int p[n],u,v;
+
+	for(int i = 0; i < n; i++)
+		p[i] = i;
+
+	for(int i = 0; i < n; i++)
+		for(int j = i; j < n; j++)
+			if(g[i][j])
+				arestas.push_back(aresta(i,j,g[i][j]));
+
+	sort(arestas.rbegin(), arestas.rend());
+
+	int total = 0;
+
+	for(int i = 0, k = 0; i < n && k < n -1 ; i++){
+		aresta a = arestas[i];
+
+		for(u = a.origem; u != p[u]; u = p[u]);
+		for(v = a.destino; v != p[v]; v = p[v]);
+
+		if(u == v)
+			continue;
+
+		p[u] = v;
+		k++;
+		total += a.peso;
+	}
+
+	cout << total;
+
+}
+
+bool ehConexo(){
+	int visitado[n], pilha[n], topo = -1;
+	memset(visitado, 0, sizeof visitado);
+
+	pilha[++topo] = 0;
+
+	while(topo != -1){
+		int v = pilha[topo--];
+		visitado[v] = 1;
+		for(int i = 0; i < n; i++)
+			if(g[v][i] && !visitado[i])
+				pilha[++topo] = i;
+	}
+
+	for(int i = 0; i < n; i++)
+		if(!visitado[i])
+			return false;
+	
+	return true;
+}
+
+void caminhos(){
+	if(!ehConexo())
+		cout << "NAO CONEXO" << endl;
+	else {
+		kruskalMin();
+		cout << " ";
+		kruskalMax();
+		cout << endl;
+	}
+}
+
 int main(){	
 	cin >> n;
 	for(int i = 0; i < n; i++)
@@ -165,5 +281,6 @@ int main(){
 
 	//warshall();
 	//djk(2);
-	bellman(0);
+	//bellman(0);
+	caminhos();
 }

@@ -352,12 +352,9 @@ int main(){
                 break;
 /*
             case 7:
-                MinMax();
-                break;
-            case 8:
                 FordFulkerson();
                 break;
-            case 9:
+            case 8:
                 KernighanLin();
                 break;
 */

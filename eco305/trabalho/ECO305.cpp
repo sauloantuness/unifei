@@ -146,6 +146,7 @@ void Dijkstra(int n, int v){
 
     cout << endl;
 }
+
 void BellmanFord(int n, int v){
     // Criação e inicialização do vetor de custo
     int custo[n];

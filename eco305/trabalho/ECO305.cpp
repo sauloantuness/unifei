@@ -1,7 +1,5 @@
-/*
-  Arcabouço para implementação do Trabalho de
-  ECO305 - Teoria dos Grafos
-*/
+// 27586 SAULO ANTUNES SILVA
+// 23927 ALEXANDRE SILVEIRA MOREIRA TOLEDO
 
 #include <cstdio>
 #include <cstring>
@@ -289,7 +287,6 @@ bool ehConexo(int n){
     return true;
 }
 
-
 // Funções desenvolvidas no trabalho
 bool Regular(int ordem){
     int grau = 0, grau_aux;
@@ -350,9 +347,9 @@ int main(){
                 else 
                     cout << "NAO CONEXO" << endl;
                 break;
-/*
+/*                
             case 7:
-                FordFulkerson();
+                cout << FordFulkerson(ordem,0,2);
                 break;
             case 8:
                 KernighanLin();

@@ -1,6 +1,3 @@
-// 27586 SAULO ANTUNES SILVA
-// 23927 ALEXANDRE SILVEIRA MOREIRA TOLEDO
-
 #include <cstdio>
 #include <cstring>
 #include <iostream>
